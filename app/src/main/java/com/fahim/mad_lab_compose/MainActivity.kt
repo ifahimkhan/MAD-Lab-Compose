@@ -18,12 +18,13 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
 import com.fahim.mad_lab_compose.ui.theme.MADLabComposeTheme
@@ -33,13 +34,15 @@ import com.google.accompanist.permissions.rememberPermissionState
 val TAG: String? = MainActivity::class.java.name
 
 class MainActivity : ComponentActivity() {
+    private lateinit var galleryViewModel: GalleryViewModel
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        galleryViewModel = GalleryViewModel(application)
         enableEdgeToEdge()
         setContent {
             MADLabComposeTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) {
-                    GalleryApp()
+                    GalleryApp(galleryViewModel)
                 }
             }
         }
@@ -48,7 +51,7 @@ class MainActivity : ComponentActivity() {
 
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
-fun GalleryApp() {
+fun GalleryApp(galleryViewModel: GalleryViewModel = viewModel()) {
     Log.e(TAG, "GalleryApp: ")
     val permission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
         listOf(android.Manifest.permission.READ_MEDIA_IMAGES)
@@ -57,7 +60,7 @@ fun GalleryApp() {
     }
     val permissionState = rememberPermissionState(permission[0])
     if (permissionState.hasPermission) {
-        GalleryContent()
+        GalleryContent(viewModel = galleryViewModel)
     } else {
         LaunchedEffect(Unit) {
             Log.e(TAG, "GalleryApp: LaunchEffect")
@@ -69,14 +72,16 @@ fun GalleryApp() {
 
 @OptIn(ExperimentalGlideComposeApi::class)
 @Composable
-fun GalleryContent() {
-    val context = LocalContext.current
-    val images = remember { ImageHelper.getImages(context) }
+fun GalleryContent(viewModel: GalleryViewModel = viewModel()) {
+//    val context = LocalContext.current
+//    val images = remember { ImageHelper.getImages(context) }
+    val images by viewModel.images.collectAsStateWithLifecycle(initialValue = emptyList())
 
     LazyVerticalGrid(
         columns = GridCells.Fixed(3)
     ) {
         items(images) { uri ->
+            Log.e(TAG, "GalleryContent: $uri", )
             GlideImage(
                 model = uri,
                 contentDescription = null,
