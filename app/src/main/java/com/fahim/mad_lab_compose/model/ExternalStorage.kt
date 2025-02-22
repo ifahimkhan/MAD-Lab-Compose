@@ -2,7 +2,6 @@ package com.fahim.mad_lab_compose.model
 
 import android.content.Context
 import android.os.Environment
-import android.widget.Toast
 import com.fahim.mad_lab_compose.interfaces.Storage
 import java.io.File
 import java.io.FileInputStream
@@ -16,14 +15,10 @@ class ExternalStorage : Storage {
                 Environment.DIRECTORY_DOWNLOADS
             ), fileName
         )
-        try {
-            FileOutputStream(file).use { fos ->
-                fos.write(data.toByteArray())
-                Toast.makeText(context, "File Written Successfully", Toast.LENGTH_SHORT).show()
-            }
-        } catch (e: IOException) {
-            e.printStackTrace()
+        FileOutputStream(file).use { fos ->
+            fos.write(data.toByteArray())
         }
+
     }
 
     override fun readFromFile(context: Context, fileName: String): String {

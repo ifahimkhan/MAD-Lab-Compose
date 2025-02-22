@@ -10,14 +10,13 @@ class InternalStorage : Storage {
         try {
             context.openFileOutput(fileName, Context.MODE_PRIVATE).use { fos ->
                 fos.write(data.toByteArray())
-                Toast.makeText(context, "File Written Successfully", Toast.LENGTH_SHORT).show()
             }
         } catch (e: IOException) {
             e.printStackTrace()
         }
     }
 
-    override fun readFromFile(context: Context,fileName: String): String {
+    override fun readFromFile(context: Context, fileName: String): String {
 
         val stringBuilder = StringBuilder()
 
