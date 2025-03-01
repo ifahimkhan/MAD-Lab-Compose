@@ -2,6 +2,8 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    id("com.google.devtools.ksp")
+
 }
 
 android {
@@ -61,6 +63,16 @@ dependencies {
     implementation("io.coil-kt:coil-compose:2.2.2")
     implementation ("com.github.bumptech.glide:glide:4.12.0")
     implementation ("com.github.bumptech.glide:compose:1.0.0-alpha.1")
-    implementation ("androidx.lifecycle:lifecycle-viewmodel-compose:2.6.1")
+    // ViewModel and LiveData
+    implementation ("androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0")
+    // Room
+    implementation (libs.androidx.room.runtime)
+    ksp (libs.androidx.room.compiler)
+    implementation (libs.androidx.room.ktx) // For Kotlin Coroutines support
+
+
+    // Coroutines
+    implementation ("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
+    implementation ("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
 
 }
