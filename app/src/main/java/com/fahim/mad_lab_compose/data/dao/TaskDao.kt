@@ -1,5 +1,6 @@
 package com.fahim.mad_lab_compose.data.dao
 
+import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.Query
@@ -7,6 +8,7 @@ import androidx.room.Update
 import com.fahim.mad_lab_compose.data.entity.Task
 import kotlinx.coroutines.flow.Flow
 
+@Dao
 interface TaskDao {
     @Insert
     fun insertTask(task: Task)
