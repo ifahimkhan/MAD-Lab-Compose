@@ -19,11 +19,16 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextFieldColors
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -32,11 +37,18 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.fahim.mad_lab_compose.data.entity.Task
+import com.fahim.mad_lab_compose.ui.theme.Black
 import com.fahim.mad_lab_compose.ui.theme.MADLabComposeTheme
+import com.fahim.mad_lab_compose.ui.theme.Orange
+import com.fahim.mad_lab_compose.ui.theme.White
 import com.fahim.mad_lab_compose.viewmodel.TaskViewModel
 import com.fahim.mad_lab_compose.viewmodel.TaskViewModelFactory
 
@@ -92,6 +104,7 @@ fun ToDoApp(tasks: List<Task>, onAdd: (String, String) -> Unit, onDelete: (task:
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddTaskForm(onAdd: (String, String) -> Unit) {
     var title by remember { mutableStateOf("") }
@@ -103,6 +116,7 @@ fun AddTaskForm(onAdd: (String, String) -> Unit) {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         OutlinedTextField(
+            colors = TextFieldDefaults.outlinedTextFieldColors(focusedBorderColor = Orange, focusedLabelColor = Orange),
             value = title,
             onValueChange = {
                 title = it
@@ -115,6 +129,7 @@ fun AddTaskForm(onAdd: (String, String) -> Unit) {
                 .padding(4.dp)
         )
         OutlinedTextField(
+            colors = TextFieldDefaults.outlinedTextFieldColors(focusedBorderColor = Orange, focusedLabelColor = Orange),
             value = description,
             onValueChange = {
                 description = it
@@ -126,6 +141,12 @@ fun AddTaskForm(onAdd: (String, String) -> Unit) {
                 .padding(4.dp)
         )
         Button(
+            colors = ButtonColors(
+                containerColor = Orange,
+                contentColor = White,
+                disabledContentColor = Color.DarkGray,
+                disabledContainerColor = Color.LightGray
+            ),
             onClick = {
                 onAdd(title, description)
             }, modifier = Modifier.padding(4.dp),
@@ -141,6 +162,7 @@ fun TaskList(tasks: List<Task>, onDelete: (Task) -> Unit) {
     LazyColumn(
         modifier = Modifier
             .fillMaxHeight(fraction = 1f)
+            .padding(bottom = 60.dp)
             .scrollable(
                 orientation = Orientation.Vertical,
                 state = rememberScrollState()
@@ -158,7 +180,12 @@ fun TaskItem(task: Task, onDelete: (Task) -> Unit) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(8.dp)
+            .padding(start = 16.dp, end = 16.dp, top = 4.dp, bottom = 4.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = White,
+            contentColor = Black
+        )
+
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -166,12 +193,12 @@ fun TaskItem(task: Task, onDelete: (Task) -> Unit) {
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
-                Text(text = task.title)
+                Text(text = task.title, color = Black, fontWeight = FontWeight.Bold, fontSize = 18.sp)
                 Text(text = task.description)
 
             }
             IconButton(onClick = { onDelete(task) }) {
-                Icon(Icons.Default.Delete, contentDescription = "Delete")
+                Icon(Icons.Default.Delete, contentDescription = "Delete", tint = Color.Red)
             }
         }
     }
