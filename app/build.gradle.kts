@@ -57,9 +57,12 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
     implementation ("com.google.accompanist:accompanist-permissions:0.19.0")
-    implementation("io.coil-kt:coil-compose:2.2.2")
-    implementation ("com.github.bumptech.glide:glide:4.12.0")
-    implementation ("com.github.bumptech.glide:compose:1.0.0-alpha.1")
+    // Coil
+    implementation("io.coil-kt:coil-compose:2.4.0")
+
+    // Glide (with Compose integration)
+    implementation("com.github.bumptech.glide:glide:4.15.1")
+    implementation("com.github.bumptech.glide:compose:1.0.0-alpha.1")
 
 
 }
