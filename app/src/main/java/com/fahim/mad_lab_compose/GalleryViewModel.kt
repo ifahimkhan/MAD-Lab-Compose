@@ -15,10 +15,6 @@ class GalleryViewModel(application: Application) : AndroidViewModel(application)
     private val _images = MutableStateFlow<List<Uri>>(emptyList())
     val images: StateFlow<List<Uri>> = _images.asStateFlow()
 
-    init {
-        loadImages()
-    }
-
     fun loadImages() {
         viewModelScope.launch(Dispatchers.IO) {
             val imageUris = withContext(Dispatchers.IO) {
