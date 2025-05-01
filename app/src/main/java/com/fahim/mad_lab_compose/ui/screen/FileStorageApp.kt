@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -37,6 +38,7 @@ import com.fahim.mad_lab_compose.model.InternalStorage
 fun FileStorageApp() {
     val context = LocalContext.current
     var text by rememberSaveable { mutableStateOf("") }
+    var fileData by rememberSaveable { mutableStateOf("") }
     var fileName by remember { mutableStateOf("example.txt") }
     var storageType by remember { mutableStateOf(StorageType.INTERNAL) }
     val internalStorage = InternalStorage()
@@ -106,30 +108,38 @@ fun FileStorageApp() {
 
         PermissionHandler(permission = Manifest.permission.WRITE_EXTERNAL_STORAGE,
             onPermissionGranted = {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Button(onClick = {
-                        if (storageType == StorageType.INTERNAL)
-                            storage = internalStorage
-                        else if (storageType == StorageType.EXTERNAL)
-                            storage = externalStorage
-                        storage?.writeToFile(
-                            context = context, fileName = fileName, data = text
-                        )
-                    }) {
-                        Text("Write File")
+                Column {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Button(onClick = {
+                            if (storageType == StorageType.INTERNAL)
+                                storage = internalStorage
+                            else if (storageType == StorageType.EXTERNAL)
+                                storage = externalStorage
+                            storage?.writeToFile(
+                                context = context, fileName = fileName, data = text
+                            )
+                        }) {
+                            Text("Write File")
+                        }
+                        Button(onClick = {
+                            if (storageType == StorageType.INTERNAL)
+                                storage = internalStorage
+                            else if (storageType == StorageType.EXTERNAL)
+                                storage = externalStorage
+                            fileData = storage?.readFromFile(context, fileName) ?: ""
+                        }) {
+                            Text("Read File")
+                        }
                     }
-                    Button(onClick = {
-                        if (storageType == StorageType.INTERNAL)
-                            storage = internalStorage
-                        else if (storageType == StorageType.EXTERNAL)
-                            storage = externalStorage
-                        text = storage?.readFromFile(context, fileName) ?: ""
-                    }) {
-                        Text("Read File")
-                    }
+                    Text(
+                        text = fileData,
+                        modifier = Modifier.padding(8.dp),
+                        style = MaterialTheme.typography.bodyLarge,
+                        fontStyle = MaterialTheme.typography.bodyLarge.fontStyle
+                    )
                 }
 
             },
