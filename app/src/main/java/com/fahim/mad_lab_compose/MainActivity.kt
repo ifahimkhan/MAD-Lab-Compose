@@ -10,14 +10,18 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
@@ -27,6 +31,8 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
@@ -70,12 +76,24 @@ fun BasicCalculator(modifier: Modifier = Modifier) {
             alignment = Alignment.CenterVertically
         )
     ) {
-        TextField(
+
+        OutlinedTextField(
             value = number1,
             onValueChange = { number1 = it },
             label = { Text("Enter number 1") },
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal)
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(12.dp)), // Rounded corners
+            shape = RoundedCornerShape(12.dp),    // Rounded outline
+            colors = TextFieldDefaults.outlinedTextFieldColors(
+                focusedBorderColor = Color.Blue,
+                unfocusedBorderColor = Color.Gray,
+                cursorColor = Color.Blue,
+                focusedLabelColor = Color.Blue
+            )
         )
+
 
 
         Row(
@@ -89,37 +107,84 @@ fun BasicCalculator(modifier: Modifier = Modifier) {
                 expanded = expanded.value,
                 onExpandedChange = { expanded.value = !expanded.value }
             ) {
-                TextField(
+                OutlinedTextField(
                     value = selectedOperation.value,
                     onValueChange = {},
                     readOnly = true,
-                    textStyle = TextStyle(fontSize = 20.sp),
                     label = { Text("Operation") },
-                    modifier = Modifier.menuAnchor()
+                    textStyle = TextStyle(fontSize = 20.sp),
+                    modifier = Modifier
+                        .menuAnchor()
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(12.dp)), // Rounded corners
+                    shape = RoundedCornerShape(12.dp),
+                    colors = TextFieldDefaults.outlinedTextFieldColors(
+                        focusedBorderColor = Color.Blue,
+                        unfocusedBorderColor = Color.Gray,
+                        cursorColor = Color.Blue,
+                        focusedLabelColor = Color.Blue
+                    ),
+                    trailingIcon = {
+                        ExposedDropdownMenuDefaults.TrailingIcon(
+                            expanded = expanded.value
+                        )
+                    }
                 )
+
                 ExposedDropdownMenu(
                     expanded = expanded.value,
                     onDismissRequest = { expanded.value = false }
                 ) {
                     operations.forEach { operation ->
-                        DropdownMenuItem(text = { Text(operation) }, onClick = {
-                            selectedOperation.value = operation
-                            expanded.value = false
-                        })
+                        DropdownMenuItem(
+                            text = { Text(operation) },
+                            onClick = {
+                                selectedOperation.value = operation
+                                expanded.value = false
+                            }
+                        )
                     }
                 }
             }
         }
-        TextField(
+
+        OutlinedTextField(
             value = number2,
             onValueChange = { number2 = it },
             label = { Text("Enter number 2") },
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal)
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(12.dp)), // Rounded corners
+            shape = RoundedCornerShape(12.dp),    // Rounded outline
+            colors = TextFieldDefaults.outlinedTextFieldColors(
+                focusedBorderColor = Color.Blue,
+                unfocusedBorderColor = Color.Gray,
+                cursorColor = Color.Blue,
+                focusedLabelColor = Color.Blue
+            )
         )
-        Button(onClick = {
-            result = calculate(number1, number2, selectedOperation)
-        }) { Text("Calculate") }
-        Text(text = "Result $result", style = TextStyle(fontSize = 24.sp))
+        Button(
+            enabled = number1.isNotEmpty() && number2.isNotEmpty(),
+            onClick = {
+                result = calculate(number1, number2, selectedOperation)
+            },
+            colors = ButtonDefaults.buttonColors(
+                containerColor = if (number1.isNotEmpty() && number2.isNotEmpty()) {
+                    Color.Black
+                } else {
+                    Color.LightGray
+                },      // Background color
+                contentColor = Color.White        // Text color
+            ),
+            shape = RoundedCornerShape(12.dp),   // Optional: match rounded style
+            modifier = Modifier
+                .padding(16.dp)
+        ) {
+            Text("Calculate")
+        }
+
+        Text(text = "$result", style = TextStyle(fontSize = 24.sp));
     }
 
 }
