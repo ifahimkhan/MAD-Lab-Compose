@@ -41,11 +41,11 @@ import androidx.compose.ui.unit.sp
 
 @Composable
 fun CalculatorScreen() {
-    var displayValue by remember { mutableStateOf("711") }
+    var displayValue by remember { mutableStateOf("0") }
     var firstOperand by remember { mutableStateOf(0.0) }
     var currentOperation by remember { mutableStateOf<Operation?>(null) }
     var resetDisplay by remember { mutableStateOf(false) }
-    var previousEquation by remember { mutableStateOf("5 + 6") }
+    var previousEquation by remember { mutableStateOf("") }
 
     // Moved these functions inside remember to make them stable
     val calculatorActions = remember {
