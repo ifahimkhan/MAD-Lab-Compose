@@ -38,6 +38,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import java.text.DecimalFormat
 
 @Composable
 fun CalculatorScreen() {
@@ -64,10 +65,13 @@ fun CalculatorScreen() {
             }
 
             fun formatResult(result: Double): String {
-                return if (result % 1 == 0.0) {
+                val df = DecimalFormat("#.######")
+                return if (result.isNaN()) {
+                    "Error"
+                } else if (result % 1 == 0.0) {
                     result.toLong().toString()
                 } else {
-                    result.toString()
+                    df.format(result)
                 }
             }
 
