@@ -26,7 +26,6 @@ import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -61,20 +60,12 @@ fun SimpleWebViewScreen(
     Scaffold(
         topBar = {
             Column {
-                TopAppBar(
-                    title = {
-                        Text(
-                            text = state.pageTitle ?: state.lastLoadedUrl ?: "WebView",
-                            maxLines = 1
-                        )
-                    }
-                )
 
                 // Simple address bar
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 8.dp, vertical = 4.dp),
+                        .padding(horizontal = 8.dp, vertical = 24.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     OutlinedTextField(
@@ -112,11 +103,11 @@ fun SimpleWebViewScreen(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 16.dp),
+                        .padding(horizontal = 4.dp),
                     horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
                     IconButton(
-                        onClick = { navigator.navigateBack(); urlText = state.lastLoadedUrl ?: "" },
+                        onClick = { navigator.navigateBack(); },
                         enabled = navigator.canGoBack
                     ) {
                         Icon(Icons.Filled.ArrowBack, contentDescription = "Back")
@@ -125,7 +116,6 @@ fun SimpleWebViewScreen(
                     IconButton(
                         onClick = {
                             navigator.navigateForward()
-                            urlText = state.lastLoadedUrl ?: ""
                         },
                         enabled = navigator.canGoForward
                     ) {
