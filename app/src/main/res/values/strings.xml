@@ -1,3 +1,15 @@
 <resources>
     <string name="app_name">MAD-Lab-Compose</string>
+
+    <string name="broadcast_title">Broadcast Receivers:</string>
+    <string name="switch_internet">Internet Broadcast</string>
+    <string name="switch_airplane">Airplane Broadcast</string>
+    <string name="switch_battery">Battery Level Broadcast</string>
+
+    <string name="toast_airplane_enabled">Airplane Mode Enabled</string>
+    <string name="toast_airplane_disabled">Airplane Mode Disabled</string>
+    <string name="toast_internet_connected">Connected to the Internet</string>
+    <string name="toast_internet_disconnected">Disconnected from the Internet</string>
+    <string name="toast_battery_level">Battery Level: %1$d%%</string>
+    <string name="toast_battery_unknown">Battery Level: unknown</string>
 </resources>
