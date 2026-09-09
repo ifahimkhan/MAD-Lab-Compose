@@ -16,6 +16,7 @@ import com.fahim.mad_lab_compose.ui.theme.MADLabComposeTheme
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        HeapMemoryLogger.log(this, "MainActivity.onCreate")
         enableEdgeToEdge()
         setContent {
             MADLabComposeTheme {
