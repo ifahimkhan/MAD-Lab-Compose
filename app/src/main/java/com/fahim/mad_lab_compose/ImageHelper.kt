@@ -13,9 +13,12 @@ import coil.request.CachePolicy
 class ImageHelper {
 
     companion object {
-        fun getImages(context: Context): List<Uri> {
-            val images = mutableListOf<Uri>()
-            val projection = arrayOf(MediaStore.Images.Media._ID)
+        fun getImages(context: Context): List<GalleryImage> {
+            val images = mutableListOf<GalleryImage>()
+            val projection = arrayOf(
+                MediaStore.Images.Media._ID,
+                MediaStore.Images.Media.DATE_MODIFIED,
+            )
             val sortOrder = "${MediaStore.Images.Media.DATE_ADDED} DESC"
 
             context.contentResolver.query(
@@ -26,14 +29,16 @@ class ImageHelper {
                 sortOrder
             )?.use { cursor ->
                 val idColumn = cursor.getColumnIndexOrThrow(MediaStore.Images.Media._ID)
+                val modifiedColumn =
+                    cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATE_MODIFIED)
                 while (cursor.moveToNext()) {
                     val id = cursor.getLong(idColumn)
                     val contentUri =
                         ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, id)
-                    images.add(contentUri)
+                    images.add(GalleryImage(contentUri, cursor.getLong(modifiedColumn)))
                 }
             }
-            return images
+            return images.toList()
         }
 
         fun getImageLoaderCache(context: Context): ImageLoader {

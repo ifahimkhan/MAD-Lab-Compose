@@ -2,16 +2,16 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.ksp)
 }
 
 android {
     namespace = "com.fahim.mad_lab_compose"
-    compileSdk = 35
-
+    compileSdk = 36
     defaultConfig {
         applicationId = "com.fahim.mad_lab_compose"
         minSdk = 26
-        targetSdk = 35
+        targetSdk = 36
         versionCode = 1
         versionName = "1.0"
 
@@ -31,8 +31,10 @@ android {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
-    kotlinOptions {
-        jvmTarget = "11"
+    kotlin {
+        compilerOptions {
+            jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_11)
+        }
     }
     buildFeatures {
         compose = true
@@ -61,8 +63,11 @@ dependencies {
     implementation("io.coil-kt:coil-compose:2.4.0")
 
     // Glide (with Compose integration)
-    implementation("com.github.bumptech.glide:glide:4.15.1")
-    implementation("com.github.bumptech.glide:compose:1.0.0-alpha.1")
+    implementation(libs.glide)
+    implementation(libs.glide.compose)
+    // KSP generates GeneratedAppGlideModuleImpl; without it @GlideModule is never registered.
+    ksp(libs.glide.ksp)
+    implementation("com.github.ifahimkhan.HeapMonitor:heapmonitor:v0.1.1")
 
 
 }
