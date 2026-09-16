@@ -12,17 +12,24 @@ import kotlinx.coroutines.flow.Flow
 interface TaskDao {
     @Insert
     fun insertTask(task: Task)
-
     @Update
     fun updateTask(task: Task)
-
     @Delete
     fun deleteTask(task: Task)
-
     @Query("Delete from task_table")
     fun deleteAllTask()
-
     @Query("Select * from task_table order by id ASC")
     fun getAllTask(): Flow<List<Task>>
 
 }
+
+
+
+
+
+
+
+
+
+
+

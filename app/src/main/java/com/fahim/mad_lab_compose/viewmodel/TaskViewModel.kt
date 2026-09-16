@@ -12,6 +12,7 @@ class TaskViewModel(private val repository: TaskRepository) : ViewModel() {
 
     fun insert(task: Task) = viewModelScope.launch(Dispatchers.IO){
         repository.insertTask(task)
+
     }
 
     fun update(task: Task) = viewModelScope.launch (Dispatchers.IO){
