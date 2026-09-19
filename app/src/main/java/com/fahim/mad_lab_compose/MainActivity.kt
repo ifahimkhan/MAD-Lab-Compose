@@ -19,12 +19,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.material3.Button
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
@@ -36,6 +38,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
+import coil.Coil
 import coil.compose.AsyncImage
 import coil.request.CachePolicy
 import coil.request.ImageRequest
@@ -98,7 +101,8 @@ fun GalleryContent() {
     val images by produceState(initialValue = emptyList<GalleryImage>(), context) {
         value = withContext(Dispatchers.IO) { ImageHelper.getImages(context) }
     }
-    var useGlide by remember { mutableStateOf(false) }
+    var useGlide by remember { mutableStateOf(true) }
+
 
     Column {
         BoxWithConstraints(
@@ -116,13 +120,42 @@ fun GalleryContent() {
                 ),
                 height = ThumbnailSpec.heightPx(density.density),
             )
-            LazyVerticalGrid(columns = GridCells.Fixed(GRID_COLUMNS)) {
+            val lazyGridState = rememberLazyGridState()
+            var lastPreloadedRow by remember { mutableIntStateOf(-1) }
+
+            LaunchedEffect(lazyGridState.firstVisibleItemIndex, images, useGlide) {
+                if (useGlide || images.isEmpty()) return@LaunchedEffect
+                val firstVisible = lazyGridState.firstVisibleItemIndex
+                val currentRow = firstVisible / GRID_COLUMNS
+
+                // Only trigger prefetch once per new row scrolled forward
+                if (currentRow > lastPreloadedRow) {
+                    lastPreloadedRow = currentRow
+                    val preloadAhead = 12
+                    // Prefetch only items beyond the currently visible cells
+                    val start = (firstVisible + (GRID_COLUMNS * 3)).coerceAtMost(images.size)
+                    val end = (start + preloadAhead).coerceAtMost(images.size)
+
+                    val imageLoader = Coil.imageLoader(context)
+                    for (i in start until end) {
+                        val request = ImageRequest.Builder(context)
+                            .data(images[i].uri)
+                            .size(cellSize.width, cellSize.height)
+                            .build()
+                        imageLoader.enqueue(request)
+                    }
+                }
+            }
+            LazyVerticalGrid(
+                columns = GridCells.Fixed(GRID_COLUMNS),
+                state = lazyGridState
+            ) {
                 // Stable keys let the grid reuse cell state on scroll instead of restarting loads.
                 items(images, key = { it.uri }) { image ->
                     if (useGlide) {
                         GlideThumbnail(image = image, cellSize = cellSize)
                     } else {
-                        CoilThumbnail(uri = image.uri, context = context)
+                        CoilThumbnail(uri = image.uri, context = context, cellSize = cellSize)
                     }
                 }
             }
@@ -165,16 +198,21 @@ private fun GlideThumbnail(image: GalleryImage, cellSize: IntSize) {
 }
 
 @Composable
-private fun CoilThumbnail(uri: Uri, context: Context) {
-    AsyncImage(
-        model = ImageRequest.Builder(context)
+private fun CoilThumbnail(uri: Uri, context: Context, cellSize: IntSize) {
+
+    val request = remember(uri, cellSize) {
+        ImageRequest.Builder(context)
             .data(uri)
+            .size(cellSize.width, cellSize.height)
             .diskCachePolicy(CachePolicy.ENABLED)
             .memoryCachePolicy(CachePolicy.ENABLED)
-            .crossfade(true)
+            .crossfade(false)
             .placeholder(R.drawable.ic_launcher_background)
             .error(R.drawable.ic_launcher_background)
-            .build(),
+            .build()
+    }
+    AsyncImage(
+        model = request,
         contentDescription = null,
         modifier = thumbnailModifier(),
         contentScale = ContentScale.Crop
