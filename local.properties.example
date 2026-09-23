@@ -1,0 +1,10 @@
+## This is an example local.properties file.
+## Copy this file to local.properties in the project root and add your Gemini API Key.
+## Do NOT commit your real local.properties to version control.
+
+# Location of the SDK. This is only used by Gradle.
+# Windows example: sdk.dir=C\:\\Users\\username\\AppData\\Local\\Android\\Sdk
+# macOS example: sdk.dir=/Users/username/Library/Android/sdk
+
+# Google Gemini API Key from Google AI Studio (https://aistudio.google.com/)
+GEMINI_API_KEY=your_gemini_api_key_here

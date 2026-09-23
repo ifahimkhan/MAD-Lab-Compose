@@ -1,240 +1,169 @@
 package com.fahim.mad_lab_compose
 
+import android.Manifest
+import android.content.pm.PackageManager
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.gestures.Orientation
-import androidx.compose.foundation.gestures.scrollable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonColors
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextFieldColors
-import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontStyle
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.fahim.mad_lab_compose.data.entity.Task
-import com.fahim.mad_lab_compose.ui.theme.Black
-import com.fahim.mad_lab_compose.ui.theme.MADLabComposeTheme
-import com.fahim.mad_lab_compose.ui.theme.Orange
-import com.fahim.mad_lab_compose.ui.theme.White
-import com.fahim.mad_lab_compose.viewmodel.TaskViewModel
-import com.fahim.mad_lab_compose.viewmodel.TaskViewModelFactory
-
+import com.fahim.mad_lab_compose.ui.AppScreen
+import com.fahim.mad_lab_compose.ui.ChatScreen
+import com.fahim.mad_lab_compose.ui.ChatViewModel
+import com.fahim.mad_lab_compose.ui.ChatViewModelFactory
+import com.fahim.mad_lab_compose.ui.MemoryScreen
+import com.fahim.mad_lab_compose.ui.theme.GeminiChatbotTheme
 
 class MainActivity : ComponentActivity() {
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
         setContent {
-            val taskViewModel: TaskViewModel = viewModel(
-                factory = TaskViewModelFactory(
-                    (application as TaskApplication).repository
+            val app = application as ChatbotApplication
+            val chatViewModel: ChatViewModel = viewModel(
+                factory = ChatViewModelFactory(app.repository, applicationContext)
+            )
+
+            GeminiChatbotTheme {
+                Surface(
+                    modifier = Modifier.fillMaxSize(),
+                    color = MaterialTheme.colorScheme.background
+                ) {
+                    ChatbotApp(viewModel = chatViewModel)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun ChatbotApp(viewModel: ChatViewModel) {
+    val state by viewModel.uiState.collectAsState()
+    val context = androidx.compose.ui.platform.LocalContext.current
+
+    val speechIntentLauncher = androidx.activity.compose.rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == android.app.Activity.RESULT_OK) {
+            val spokenText = result.data?.getStringArrayListExtra(android.speech.RecognizerIntent.EXTRA_RESULTS)?.firstOrNull()
+            if (!spokenText.isNullOrBlank()) {
+                viewModel.onInputTextChanged(spokenText)
+            }
+        }
+    }
+
+    val micPermissionLauncher = androidx.activity.compose.rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+            if (android.speech.SpeechRecognizer.isRecognitionAvailable(context)) {
+                viewModel.startVoiceRecognition()
+            } else {
+                try {
+                    val intent = android.content.Intent(android.speech.RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
+                        putExtra(android.speech.RecognizerIntent.EXTRA_LANGUAGE_MODEL, android.speech.RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
+                        putExtra(android.speech.RecognizerIntent.EXTRA_PROMPT, "Speak to Gemini Chatbot...")
+                    }
+                    speechIntentLauncher.launch(intent)
+                } catch (e: Exception) {
+                    viewModel.dismissError()
+                    android.widget.Toast.makeText(context, "Voice input not available on this device", android.widget.Toast.LENGTH_SHORT).show()
+                }
+            }
+        } else {
+            viewModel.dismissError()
+            android.widget.Toast.makeText(
+                context,
+                "Microphone permission is required for voice input",
+                android.widget.Toast.LENGTH_LONG
+            ).show()
+        }
+    }
+
+    val handleVoiceClick = {
+        if (ContextCompat.checkSelfPermission(
+                context,
+                Manifest.permission.RECORD_AUDIO
+            ) == PackageManager.PERMISSION_GRANTED
+        ) {
+            if (android.speech.SpeechRecognizer.isRecognitionAvailable(context)) {
+                viewModel.startVoiceRecognition()
+            } else {
+                try {
+                    val intent = android.content.Intent(android.speech.RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
+                        putExtra(android.speech.RecognizerIntent.EXTRA_LANGUAGE_MODEL, android.speech.RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
+                        putExtra(android.speech.RecognizerIntent.EXTRA_PROMPT, "Speak to Gemini Chatbot...")
+                    }
+                    speechIntentLauncher.launch(intent)
+                } catch (e: Exception) {
+                    android.widget.Toast.makeText(context, "Voice input not available on this device", android.widget.Toast.LENGTH_SHORT).show()
+                }
+            }
+        } else {
+            micPermissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
+        }
+    }
+
+    // Handle back button when on Memory screen
+    BackHandler(enabled = state.currentScreen == AppScreen.MEMORY) {
+        viewModel.navigateTo(AppScreen.CHAT)
+    }
+
+    Crossfade(
+        targetState = state.currentScreen,
+        label = "ScreenTransition"
+    ) { screen ->
+        when (screen) {
+            AppScreen.CHAT -> {
+                ChatScreen(
+                    state = state,
+                    onInputTextChanged = { text -> viewModel.onInputTextChanged(text) },
+                    onSendMessage = { explicit -> viewModel.sendMessage(explicit) },
+                    onOpenMemories = { viewModel.navigateTo(AppScreen.MEMORY) },
+                    onOpenApiKeyDialog = { viewModel.setShowApiKeyDialog(true) },
+                    onShowClearChatDialog = { show -> viewModel.setShowClearChatDialog(show) },
+                    onConfirmClearChat = { viewModel.clearChatHistory() },
+                    onDismissError = { viewModel.dismissError() },
+                    onSaveApiKey = { key -> viewModel.setApiKey(key) },
+                    onShareConversation = { viewModel.shareConversation() },
+                    onDismissShareDialog = { viewModel.dismissShareDialog() },
+                    getFormattedConversation = { viewModel.getFormattedConversation() },
+                    onStartVoiceRecognition = handleVoiceClick,
+                    onStopVoiceRecognition = { viewModel.stopVoiceRecognition() },
+                    onSpeakText = { text -> viewModel.speakText(text) },
+                    onStopSpeaking = { viewModel.stopSpeaking() },
+                    onGenerateSummary = { viewModel.generateSummary() },
+                    onSaveSummary = { title -> viewModel.saveSummary(title) },
+                    onDismissSummaryDialog = { viewModel.dismissSummaryDialog() }
                 )
-            )
-
-            val tasks by taskViewModel.allTask.collectAsState(initial = emptyList())
-
-            MADLabComposeTheme {
-                ToDoApp(tasks = tasks,
-                    onAdd = { title, description ->
-                        taskViewModel.insert(
-                            Task(
-                                title = title,
-                                description = description
-                            )
-                        )
-                    },
-                    onDelete = { task ->
-                        taskViewModel.delete(task)
-                    })
-
             }
+            AppScreen.MEMORY -> {
+                MemoryScreen(
+                    state = state,
+                    onBack = { viewModel.navigateTo(AppScreen.CHAT) },
+                    onDeleteMemory = { mem -> viewModel.deleteMemory(mem) },
+                    onAddMemory = { k, v -> viewModel.addOrUpdateMemory(k, v) },
+                    onClearAllMemories = { viewModel.clearAllMemories() },
+                    onShowAddDialog = { show -> viewModel.setShowAddMemoryDialog(show) },
+                    onShowClearDialog = { show -> viewModel.setShowClearMemoriesDialog(show) }
+                )
             }
-        }
-}
-
-@Composable
-fun ToDoApp(tasks: List<Task>, onAdd: (String, String) -> Unit, onDelete: (task: Task) -> Unit) {
-
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(top = 48.dp)
-
-    ) {
-        AddTaskForm(onAdd = { title, description ->
-            onAdd(title, description)
-        })
-        TaskList(tasks = tasks, onDelete = { task ->
-            onDelete(task)
-        })
-
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun AddTaskForm(onAdd: (String, String) -> Unit) {
-    var title by remember { mutableStateOf("") }
-    var description by remember { mutableStateOf("") }
-    var enableButton by remember { mutableStateOf(false) }
-    Column(
-        modifier = Modifier
-            .padding(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        OutlinedTextField(
-            colors = TextFieldDefaults.outlinedTextFieldColors(focusedBorderColor = Orange, focusedLabelColor = Orange),
-            value = title,
-            onValueChange = {
-                title = it
-                enableButton = title.isNotEmpty() && description.isNotEmpty()
-
-            },
-            label = { Text("Title") },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(4.dp)
-        )
-        OutlinedTextField(
-            colors = TextFieldDefaults.outlinedTextFieldColors(focusedBorderColor = Orange, focusedLabelColor = Orange),
-            value = description,
-            onValueChange = {
-                description = it
-                enableButton = title.isNotEmpty() && description.isNotEmpty()
-            },
-            label = { Text("Description") },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(4.dp)
-        )
-        Button(
-            colors = ButtonColors(
-                containerColor = Orange,
-                contentColor = White,
-                disabledContentColor = Color.DarkGray,
-                disabledContainerColor = Color.LightGray
-            ),
-            onClick = {
-                onAdd(title, description)
-            }, modifier = Modifier.padding(4.dp),
-            enabled = enableButton
-        ) {
-            Text("Add Task")
-        }
-    }
-}
-
-@Composable
-fun TaskList(tasks: List<Task>, onDelete: (Task) -> Unit) {
-    LazyColumn(
-        modifier = Modifier
-            .fillMaxHeight(fraction = 1f)
-            .padding(bottom = 60.dp)
-            .scrollable(
-                orientation = Orientation.Vertical,
-                state = rememberScrollState()
-            )
-    ) {
-        items(tasks) { task ->
-            TaskItem(task = task, onDelete = onDelete)
-        }
-
-    }
-}
-
-@Composable
-fun TaskItem(task: Task, onDelete: (Task) -> Unit) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(start = 16.dp, end = 16.dp, top = 4.dp, bottom = 4.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = White,
-            contentColor = Black
-        )
-
-    ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Column(modifier = Modifier.padding(16.dp)) {
-                Text(text = task.title, color = Black, fontWeight = FontWeight.Bold, fontSize = 18.sp)
-                Text(text = task.description)
-
-            }
-            IconButton(onClick = { onDelete(task) }) {
-                Icon(Icons.Default.Delete, contentDescription = "Delete", tint = Color.Red)
+            AppScreen.SUMMARIES -> {
+                viewModel.navigateTo(AppScreen.CHAT)
             }
         }
     }
-}
-
-@Preview
-@Composable
-private fun TaskItemPreview() {
-    TaskItem(
-        task = Task(
-            1, "Title", "Description"
-        ), onDelete = {}
-    )
-}
-
-@Preview
-@Composable
-private fun AddTaskPreview() {
-    AddTaskForm(onAdd = { _, _ -> })
-}
-
-@Preview(showBackground = true, showSystemUi = true)
-@Composable
-private fun TodoAppPreview() {
-    val mockTasks = listOf(
-        Task(id = 1, title = "Task 1", description = "Description 1"),
-        Task(id = 2, title = "Task 2", description = "Description 2"),
-        Task(id = 3, title = "Task 2", description = "Description 2"),
-        Task(id = 4, title = "Task 2", description = "Description 2"),
-        Task(id = 5, title = "Task 2", description = "Description 2"),
-        Task(id = 6, title = "Task 2", description = "Description 2"),
-        Task(id = 7, title = "Task 2", description = "Description 2"),
-        Task(id = 8, title = "Task 2", description = "Description 2")
-    )
-
-    ToDoApp(tasks = mockTasks,
-        onAdd = { _, _ -> },
-        onDelete = { _ -> })
 }
