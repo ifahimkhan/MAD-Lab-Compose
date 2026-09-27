@@ -19,6 +19,6 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "MAD-Lab-Compose"
+rootProject.name = "GeminiApiComposeStarter"
 include(":app")
  
