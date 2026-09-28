@@ -62,9 +62,9 @@ dependencies {
     // Coil
     implementation("io.coil-kt:coil-compose:2.4.0")
 
-    // Glide (with Compose integration)
-    implementation(libs.glide)
-    implementation(libs.glide.compose)
+
+    implementation("com.github.bumptech.glide:glide:4.15.1")
+    implementation("com.github.bumptech.glide:compose:1.0.0-alpha.1")
     // KSP generates GeneratedAppGlideModuleImpl; without it @GlideModule is never registered.
     ksp(libs.glide.ksp)
     implementation("com.github.ifahimkhan.HeapMonitor:heapmonitor:v0.1.1")
