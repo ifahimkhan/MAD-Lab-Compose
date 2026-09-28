@@ -65,12 +65,11 @@ dependencies {
     implementation ("com.github.bumptech.glide:compose:1.0.0-alpha.1")
     // ViewModel and LiveData
     implementation ("androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0")
-    // Room
-    implementation (libs.androidx.room.runtime)
-    ksp (libs.androidx.room.compiler)
-    implementation (libs.androidx.room.ktx) // For Kotlin Coroutines support
 
 
+    implementation("androidx.room:room-runtime:2.6.1")
+    ksp("androidx.room:room-compiler:2.6.1")
+    implementation("androidx.room:room-ktx:2.6.1")
     // Coroutines
     implementation ("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
     implementation ("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
